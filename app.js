@@ -1,18 +1,51 @@
 const sequelize = require("./src/config/database");
 const User = require("./src/models/Users");
+const { JWT } = require("google-auth-library");
+const { GoogleSpreadsheet } = require("google-spreadsheet");
+const creds = require("./src/config/users-project.json");
 
-async function app() {
-async function testConnection() {
+
+const SCOPES = [
+  'https://www.googleapis.com/auth/spreadsheets',
+  'https://www.googleapis.com/auth/drive.file',
+];
+
+const jwt = new JWT({
+  email: creds.client_email,
+  key: creds.private_key,
+  scopes: SCOPES,
+});
+
+
+async function googleSheets() {
   try {
-    await sequelize.authenticate();
-    console.log("Conexão com banco de dados estabelecida");
+    const doc = new GoogleSpreadsheet("11cyKVRpCRP0Y7KTVV52Zop5L_JqidI8l1Bx-AAXeaXI", jwt);
+    await doc.loadInfo()
+
+  
   } catch (error) {
-    console.log("Erro na conexão", error);
+    console.log(error)
   }
 }
 
-await testConnection();
-/*await User.sync()*/
+googleSheets()
+
+
+
+async function app() {
+  async function testConnection() {
+    try {
+      await sequelize.authenticate();
+      console.log("Conexão com banco de dados estabelecida");
+    } catch (error) {
+      console.log("Erro na conexão", error);
+    }
+  }
+  
+  await testConnection();
+
+  
+
 
 
 async function userCreate() {
