@@ -21,7 +21,18 @@ async function googleSheets() {
   try {
     const doc = new GoogleSpreadsheet("11cyKVRpCRP0Y7KTVV52Zop5L_JqidI8l1Bx-AAXeaXI", jwt);
     await doc.loadInfo()
+    const sheet = doc.sheetsByIndex[0];
+    await sheet.loadHeaderRow()
 
+    
+    //await sheet.addRow({email: "carol@gmail.com", nome: "Carolina", senha: "ca5862", telefone: "7898-5496", cep: "20943-000"})
+    const rows = await sheet.getRows()
+    
+    rows.forEach((user) => {
+      const dados = user.toObject()
+      console.log(dados)
+    })
+ 
   
   } catch (error) {
     console.log(error)
@@ -54,7 +65,7 @@ async function userCreate() {
       name: "Marcus Vynicius",
       email: "marcusvynicius@gmail.com",
       password: "teste123",
-      celphone: 1122-2233,
+      celphone: 11222233,
       adress: "Av das Americas 1023",
     })
     console.log("Insert user sucessful!", newUser.toJSON())
