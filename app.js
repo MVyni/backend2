@@ -1,9 +1,19 @@
 const sequelize = require("./src/config/database");
 const User = require("./src/models/Users");
+
+const express = require("express");
+const app = express();
+app.use(express.json());
+
+app.listen(3000, () => {
+  console.log("Entrando no servidor")
+});
+
+
+
 const { JWT } = require("google-auth-library");
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 const creds = require("./src/config/users-project.json");
-
 
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
@@ -28,22 +38,25 @@ async function googleSheets() {
     //await sheet.addRow({email: "carol@gmail.com", nome: "Carolina", senha: "ca5862", telefone: "7898-5496", cep: "20943-000"})
     const rows = await sheet.getRows()
     
+    const dados = "" ;
+    
     rows.forEach((user) => {
-      const dados = user.toObject()
+      dados = user.toObject()
       console.log(dados)
     })
+
+    console.log(dados.cep)
  
-  
   } catch (error) {
     console.log(error)
   }
 }
 
-googleSheets()
+ googleSheets()
 
 
 
-async function app() {
+async function allApp() {
   async function testConnection() {
     try {
       await sequelize.authenticate();
@@ -56,7 +69,43 @@ async function app() {
   await testConnection();
 
   
+app.get("/users", async (req, res) => {
+  const users = await User.findAll();
 
+  res.status(200).send(users)
+})
+
+app.post("/users", async (req,res) => {
+  const newUser = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    celphone: req.body.celphone,
+    adress: req.body.adress,
+  });
+  res.status(200).send("User inserted successfully");
+});
+
+
+app.get("/users/:email", async (req,res) => {
+  const user = await User.findByPk(req.params.email);
+
+  res.status(200).send(user);
+})
+
+app.put("/users/:email", async (req,res) => {
+  const user = await User.findByPk(req.params.email);
+  user.update(req.body)
+
+  res.status(200).send(user)
+})
+
+app.delete("/users/:email", async (req,res) => {
+  const user = await User.findByPk(req.params.email);
+  user.destroy();
+
+  res.status(200).send("User deleted successfully");    
+})
 
 
 async function userCreate() {
@@ -68,9 +117,9 @@ async function userCreate() {
       celphone: 11222233,
       adress: "Av das Americas 1023",
     })
-    console.log("Insert user sucessful!", newUser.toJSON())
+    console.log("User inserted successfully!", newUser.toJSON())
   } catch (error) {
-    console.log("User not insert", error)
+    console.log("User not inserted", error)
   }
 }
 
@@ -86,7 +135,7 @@ async function userCreate() {
   }
  }
 
- /*users();*/
+ //users();
 
 async function findUser(email) {
   try {
@@ -126,4 +175,4 @@ async function userDelete(email) {
 
 }
 
-app()
+// allApp()
